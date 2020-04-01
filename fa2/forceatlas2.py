@@ -149,7 +149,8 @@ class ForceAtlas2:
     def forceatlas2(self,
                     G,  # a graph in 2D numpy ndarray format (or) scipy sparse matrix format
                     pos=None,  # Array of initial positions
-                    iterations=100  # Number of times to iterate the main loop
+                    iterations=100,  # Number of times to iterate the main loop
+                    callbacks_every_iters=0, callbacks=None
                     ):
         # Initializing, initAlgo()
         # ================================================================
@@ -174,16 +175,26 @@ class ForceAtlas2:
         attraction_timer = Timer(name="Attraction forces")
         applyforces_timer = Timer(name="AdjustSpeedAndApplyForces step")
 
+        # transform into list if single func is passed
+        if callable(callbacks):
+            callbacks = [callbacks]
+
         # Each iteration of this loop represents a call to goAlgo().
         niters = range(iterations)
         if self.verbose:
             niters = tqdm(niters)
         for _i in niters:
-            for n in nodes:
+            for i, n in enumerate(nodes):
                 n.old_dx = n.dx
                 n.old_dy = n.dy
                 n.dx = 0
                 n.dy = 0
+                pos[i, 0] = n.x
+                pos[i, 1] = n.y
+
+            if callbacks_every_iters > 0 and (_i % callbacks_every_iters == 0):
+                if callbacks is not None:
+                    [c(_i, pos) for c in callbacks]
 
             # Barnes Hut optimization
             if self.barnesHutOptimize:
