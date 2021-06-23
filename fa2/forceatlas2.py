@@ -51,6 +51,7 @@ class ForceAtlas2:
                  linLogMode=False,  # NOT IMPLEMENTED
                  adjustSizes=False,  # Prevent overlap (NOT IMPLEMENTED)
                  edgeWeightInfluence=1.0,
+                 degreeRepulsion=True,
 
                  # Performance
                  jitterTolerance=1.0,  # Tolerance
@@ -70,6 +71,7 @@ class ForceAtlas2:
         self.linLogMode = linLogMode
         self.adjustSizes = adjustSizes
         self.edgeWeightInfluence = edgeWeightInfluence
+        self.degreeRepulsion = degreeRepulsion
         self.jitterTolerance = jitterTolerance
         self.barnesHutOptimize = barnesHutOptimize
         self.barnesHutTheta = barnesHutTheta
@@ -101,10 +103,13 @@ class ForceAtlas2:
         nodes = []
         for i in range(0, G.shape[0]):
             n = fa2util.Node()
-            if isSparse:
-                n.mass = 1 + len(G.rows[i])
+            if self.degreeRepulsion:
+                if isSparse:
+                    n.mass = 1 + len(G.rows[i])
+                else:
+                    n.mass = 1 + numpy.count_nonzero(G[i])
             else:
-                n.mass = 1 + numpy.count_nonzero(G[i])
+                n.mass = 1
             n.old_dx = 0
             n.old_dy = 0
             n.dx = 0
