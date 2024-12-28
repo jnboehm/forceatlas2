@@ -101,3 +101,4 @@ ENV/
 .mypy_cache/
 
 .idea
+/fa2/fa2util.c
